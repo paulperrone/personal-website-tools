@@ -1,12 +1,12 @@
-from bs4 import BeautifulSoup
 import pandas as pd
 import fire
 from datetime import datetime
 import markdown2
 import os
+import shutil
 
 class Post(object):
-    
+
     def __init__(self, filename, title, tag=""):
         self.filename = filename
         self.title = title
@@ -18,14 +18,32 @@ class Post(object):
         self.generate_post_html()
         self.add_post_to_csv()
         self.generate_index_html()
-        self.remove_draft()
+        self.archive_draft()
 
     def generate_post_html(self):
-        post_html_from_markdown = markdown2.markdown_path(f"./drafts/{self.filename}.md")
-        post_content = f"""
+        post_html_from_markdown = markdown2.markdown_path(
+            f"./drafts/{self.filename}.md")
+        post_header = """
 <!DOCTYPE html>
 <html>
     <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-G45LMQL1G0"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-G45LMQL1G0');
+        </script>
+"""
+        post_html_title_tag = f"""
+        <title>{self.title}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"
+        />
         <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
@@ -34,12 +52,10 @@ class Post(object):
         rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
         />
-        <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"
-        />
         <link rel="stylesheet" href="../../main.css" />
     </head>
+"""
+        post_content = f"""
     <body>
         <p class="site-text" style="margin-top: 1em">paul perrone</p>
         <div class="container">
@@ -50,10 +66,10 @@ class Post(object):
                 <div></div>
                 <div></div>
                 <div></div>
-                <a class="site-link" href="../../index.html">home</a>
-                <a class="site-link" href="../../about/index.html">about</a>
-                <a class="site-link" href="../index.html">blog</a>
-                <a class="site-link" href="../../career/index.html">career</a>
+                <a class="site-link" href="../../">home</a>
+                <a class="site-link" href="../../about/">about</a>
+                <a class="site-link" href="../">blog</a>
+                <a class="site-link" href="../../career/">career</a>
                 <div></div>
                 <div></div>
                 <div></div>
@@ -79,8 +95,9 @@ class Post(object):
     </body>
 </html>
         """
+        completed_post = post_header + post_html_title_tag + post_content
         f = open(f"./staged-updates/posts/{self.filename}.html", "w")
-        f.write(post_content)
+        f.write(completed_post)
         f.close()
 
     #filename, title, timestamp, tag
@@ -88,7 +105,7 @@ class Post(object):
         all_posts = pd.read_csv("./posts.csv")
         all_posts['timestamp'] = pd.to_datetime(all_posts['timestamp'])
         details = [self.filename, self.title, self.timestamp, self.tag]
-        post_info = pd.Series(details, index = all_posts.columns)
+        post_info = pd.Series(details, index=all_posts.columns)
         all_posts = all_posts.append(post_info, ignore_index=True)
         all_posts = all_posts.sort_values(by='timestamp', ascending=False)
         all_posts = all_posts.drop_duplicates(subset=["title"], keep='first')
@@ -99,19 +116,27 @@ class Post(object):
         posts_string_for_index_html = """"""
         for index, row in all_posts.iterrows():
             post_html = f"""
-<p>
-    <a href="./posts/{row['filename']}.html" class="blog-link">
-        {row['title']}
-    </a>
-    <br />
-    {self.display_date}
-</p>
+                <p>
+                    <a href="./posts/{row['filename']}" class="blog-link">{row['title']}</a><br />
+                    {self.display_date}
+                </p>
             """
             posts_string_for_index_html += post_html
-        index_content = f"""
+        index_header = """
 <!DOCTYPE html>
 <html>
     <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-G45LMQL1G0"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-G45LMQL1G0');
+        </script>
+        <title>Paul's Blog</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
@@ -126,6 +151,8 @@ class Post(object):
         />
         <link rel="stylesheet" href="../main.css" />
     </head>
+"""
+        index_content = f"""
     <body>
         <p class="site-text" style="margin-top: 1em">paul perrone</p>
         <div class="container">
@@ -136,10 +163,10 @@ class Post(object):
                 <div></div>
                 <div></div>
                 <div></div>
-                <a class="site-link" href="../index.html">home</a>
-                <a class="site-link" href="../about/index.html">about</a>
-                <a class="site-link" href="./index.html">blog</a>
-                <a class="site-link" href="../career/index.html">career</a>
+                <a class="site-link" href="../">home</a>
+                <a class="site-link" href="../about/">about</a>
+                <a class="site-link" href="./">blog</a>
+                <a class="site-link" href="../career/">career</a>
                 <div></div>
                 <div></div>
                 <div></div>
@@ -161,15 +188,24 @@ class Post(object):
         </div>
     </body>
 </html>"""
+        completed_index = index_header + index_content
         f = open(f"./staged-updates/index.html", "w")
-        f.write(index_content)
+        f.write(completed_index)
         f.close()
-    
-    def remove_draft(self):
+
+    def archive_draft(self):
         if os.path.exists(f"./drafts/{self.filename}.md"):
+            src_draft = f"./drafts/{self.filename}.md"
+            dst_draft = f"./archive/{self.filename}.md"
+            shutil.move(src_draft, dst_draft)
             os.remove(f"./drafts/{self.filename}.md")
         else:
-            print("The file does not exist") 
-        
+            print("The file does not exist")
+            
+dst_blog_index = "../pperrone-website/blog/index.html"
+
+
+
+
 if __name__ == '__main__':
-  fire.Fire(Post)
+    fire.Fire(Post)
