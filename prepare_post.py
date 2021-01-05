@@ -66,9 +66,8 @@ class Post(object):
                 <div></div>
                 <div></div>
                 <div></div>
-                <a class="site-link" href="../../">home</a>
                 <a class="site-link" href="../../about/">about</a>
-                <a class="site-link" href="../">blog</a>
+                <a class="site-link" href="../../">blog</a>
                 <a class="site-link" href="../../career/">career</a>
                 <div></div>
                 <div></div>
@@ -87,7 +86,7 @@ class Post(object):
                 <!--START BLOG POST CONTENT-->
                 {post_html_from_markdown}
                 <!--END BLOG POST CONTENT-->
-            <p class="site-text copyright">Copyright © 2020 Paul Perrone</p>
+            <p class="site-text copyright">© 2020-2021, Paul Perrone</p>
             </div>
             <div class="column"></div>
         </div>
@@ -108,7 +107,7 @@ class Post(object):
         post_info = pd.Series(details, index=all_posts.columns)
         all_posts = all_posts.append(post_info, ignore_index=True)
         all_posts = all_posts.sort_values(by='timestamp', ascending=False)
-        all_posts = all_posts.drop_duplicates(subset=["title"], keep='first')
+        all_posts = all_posts.drop_duplicates(subset=["title"], keep='last')
         all_posts.to_csv("./posts.csv", index=False)
 
     def generate_index_html(self):
@@ -117,7 +116,7 @@ class Post(object):
         for index, row in all_posts.iterrows():
             post_html = f"""
                 <p>
-                    <a href="./posts/{row['filename']}" class="blog-link">{row['title']}</a><br />
+                    <a href="./blog/{self.timestamp.year}/{row['filename']}" class="blog-link">{row['title']}</a><br />
                     {self.display_date}
                 </p>
             """
@@ -149,7 +148,7 @@ class Post(object):
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"
         />
-        <link rel="stylesheet" href="../main.css" />
+        <link rel="stylesheet" href="./main.css" />
     </head>
 """
         index_content = f"""
@@ -163,7 +162,6 @@ class Post(object):
                 <div></div>
                 <div></div>
                 <div></div>
-                <a class="site-link" href="../">home</a>
                 <a class="site-link" href="../about/">about</a>
                 <a class="site-link" href="./">blog</a>
                 <a class="site-link" href="../career/">career</a>
@@ -181,7 +179,7 @@ class Post(object):
             <!--START LIST OF BLOG POSTS-->
             {posts_string_for_index_html}
             <!--END LIST OF BLOG POSTS-->
-            <p class="site-text copyright">Copyright © 2020 Paul Perrone</p>
+            <p class="site-text copyright">© 2020-2021, Paul Perrone</p>
             </div>
             <div class="column"></div>
         </div>
@@ -198,14 +196,8 @@ class Post(object):
             src_draft = f"./drafts/{self.filename}.md"
             dst_draft = f"./archive/{self.filename}.md"
             shutil.move(src_draft, dst_draft)
-            os.remove(f"./drafts/{self.filename}.md")
         else:
             print("The file does not exist")
-            
-dst_blog_index = "../pperrone-website/blog/index.html"
-
-
-
 
 if __name__ == '__main__':
     fire.Fire(Post)
