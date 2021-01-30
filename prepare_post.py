@@ -112,11 +112,12 @@ class Post(object):
 
     def generate_index_html(self):
         all_posts = pd.read_csv("./posts.csv")
+        all_posts['timestamp'] = pd.to_datetime(all_posts['timestamp'])
         posts_string_for_index_html = """"""
         for index, row in all_posts.iterrows():
             post_html = f"""
                 <p>
-                    <a href="./blog/{self.timestamp.year}/{row['filename']}" class="blog-link">{row['title']}</a><br />
+                    <a href="./blog/{row['timestamp'].year}/{row['filename']}" class="blog-link">{row['title']}</a><br />
                     {row['display_date']}
                 </p>
             """
