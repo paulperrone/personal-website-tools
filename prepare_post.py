@@ -81,7 +81,7 @@ class Post(object):
             <div class="column"></div>
             <div class="column column-80 site-text" style="text-align: left;">
                 <h1>{self.title}</h1>
-                <h6>{self.display_date}</h6>
+                <h6>{self.display_date}{(" | " + self.tag) if self.tag != "" else ""}</h6>
                 <hr />
                 <!--START BLOG POST CONTENT-->
                 {post_html_from_markdown}
@@ -103,7 +103,7 @@ class Post(object):
     def add_post_to_csv(self):
         all_posts = pd.read_csv("./posts.csv")
         all_posts['timestamp'] = pd.to_datetime(all_posts['timestamp'])
-        details = [self.filename, self.title, self.timestamp, self.tag]
+        details = [self.filename, self.title, self.timestamp, self.tag, self.display_date]
         post_info = pd.Series(details, index=all_posts.columns)
         all_posts = all_posts.append(post_info, ignore_index=True)
         all_posts = all_posts.sort_values(by='timestamp', ascending=False)
@@ -117,7 +117,7 @@ class Post(object):
             post_html = f"""
                 <p>
                     <a href="./blog/{self.timestamp.year}/{row['filename']}" class="blog-link">{row['title']}</a><br />
-                    {self.display_date}
+                    {row['display_date']}
                 </p>
             """
             posts_string_for_index_html += post_html
