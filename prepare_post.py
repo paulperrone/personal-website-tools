@@ -99,7 +99,7 @@ class Post(object):
         f.write(completed_post)
         f.close()
 
-    #filename, title, timestamp, tag
+    #filename, title, timestamp, tag, display_date
     def add_post_to_csv(self):
         all_posts = pd.read_csv("./posts.csv")
         all_posts['timestamp'] = pd.to_datetime(all_posts['timestamp'])
@@ -110,11 +110,13 @@ class Post(object):
         all_posts = all_posts.drop_duplicates(subset=["title"], keep='last')
         all_posts.to_csv("./posts.csv", index=False)
 
+    # Switch this to an apply function at some point. Better than itterows
     def generate_index_html(self):
         all_posts = pd.read_csv("./posts.csv")
         all_posts['timestamp'] = pd.to_datetime(all_posts['timestamp'])
         posts_string_for_index_html = """"""
         for index, row in all_posts.iterrows():
+            print(index)
             post_html = f"""
                 <p>
                     <a href="./blog/{row['timestamp'].year}/{row['filename']}" class="blog-link">{row['title']}</a><br />
